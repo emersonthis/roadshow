@@ -23,7 +23,7 @@ class RoadShow {
     private $post_type = 'roadshow_place';
     private $meta_nonce_name = 'roadshow_place_meta_box_nonce';
     private $email_input_name_attr = 'roadshow_place_email';
-    private $email_field_name = '_roadshow_place_email';
+    public static $email_field_name = '_roadshow_place_email';
     /**
      * This is our constructor
      *
@@ -40,6 +40,9 @@ class RoadShow {
         // front end
         add_action      ( 'wp_enqueue_scripts',                 array( $this, 'front_scripts'           ),  10      );
         // add_filter      ( 'comment_form_defaults',              array( $this, 'custom_notes_filter'     )           );
+
+        add_shortcode( 'PLACES_TO_GO', [$this, 'placesShortcode']);
+
     }
 
     /**
@@ -53,6 +56,45 @@ class RoadShow {
             self::$instance = new self;
         return self::$instance;
     }
+
+    function placesShortcode($args) {
+
+        $query =  new \WP_Query(
+        [
+          'post_type'=>[$this->post_type],
+          'order' => 'ASC',
+          'orderby'   => 'title',
+          'posts_per_page' => -1,
+        ]
+        );
+
+        echo '<div class="places">';
+
+        if ( $query->have_posts() ) :
+
+            /* Start the Loop */
+            while ( $query->have_posts() ) :
+                $query->the_post();
+
+                /*
+                * Include the Post-Type-specific template for the content.
+                * If you want to override this in a child theme, then include a file
+                * called content-___.php (where ___ is the Post Type name) and that will be used instead.
+                */
+                include ( dirname(__FILE__) . '/template-parts/place.php' );
+
+            endwhile;
+
+        else :
+
+            echo "<emph>No places to show.</emph>";
+
+        endif;
+
+        echo '</div>';
+
+    }
+
 
     function create_post_types() {
         register_post_type( $this->post_type,
@@ -108,19 +150,25 @@ class RoadShow {
 
             $updated = update_post_meta(
                 $postId,
-                $this->email_field_name,
+                self::$email_field_name,
                 sanitize_text_field( $_POST[$this->email_input_name_attr] )
             );
         }
 
     }
 
-    function front_scripts() {}
+    function front_scripts() {
+        // check for killswitch first
+        $killswitch = apply_filters( 'roadshow_css_killswitch', false );
+        if ( $killswitch )
+            return false;
+        wp_enqueue_style( 'roadshow', plugins_url( 'css/roadshow.css', __FILE__ ));
+    }
 
     function roadshow_place_settings_build_meta_box($post) {
         wp_nonce_field( basename( __FILE__ ), $this->meta_nonce_name );
 
-        $current_email = get_post_meta( $post->ID, $this->email_field_name, true );
+        $current_email = get_post_meta( $post->ID, self::$email_field_name, true );
 
         ?>
         <div class='inside'>
