@@ -68,7 +68,7 @@ class RoadShow {
         ]
         );
 
-        echo '<div class="places">';
+        $return = '<div class="places">';
 
         if ( $query->have_posts() ) :
 
@@ -76,22 +76,26 @@ class RoadShow {
             while ( $query->have_posts() ) :
                 $query->the_post();
 
-                /*
-                * Include the Post-Type-specific template for the content.
-                * If you want to override this in a child theme, then include a file
-                * called content-___.php (where ___ is the Post Type name) and that will be used instead.
-                */
-                include ( dirname(__FILE__) . '/template-parts/place.php' );
+                global $post;
+                $title = $post->post_title;
+                $email = get_post_meta($post->ID, self::$email_field_name, true);
+                $email = ($email) ? $email : get_bloginfo('admin_email');
+                $subject = __('COME TO: ', 'roadshow') . $title;
+                $body = __("Please notify me when you come to {$title}.", 'roadshow');
+
+                $return .= "<a class='place' href='mailto:{$email}?subject={$subject}&body={$body}'>" . $post->post_title . '</a>';
 
             endwhile;
 
         else :
 
-            echo "<emph>No places to show.</emph>";
+            $return .= "<emph>No places to show.</emph>";
 
         endif;
 
-        echo '</div>';
+        $return .= '</div>';
+
+        return $return;
 
     }
 
