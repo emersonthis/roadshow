@@ -1,15 +1,16 @@
-.places {
+.roadshow-places {
 }
 
-.place {
+.roadshow-place {
     display: inline-block;
-    padding: .5em 1em;
+    padding: .75em 1em;
     background-image: none;
     background-color: #000;
     color: white;
     appearance: none;
 }
 
-.place + .place {
+/*.place + .place {
     margin-left: 1em;
 }
+*/

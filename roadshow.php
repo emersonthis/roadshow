@@ -68,7 +68,7 @@ class RoadShow {
         ]
         );
 
-        $return = '<div class="places">';
+        $return = '<ul class="roadshow-places">';
 
         if ( $query->have_posts() ) :
 
@@ -83,7 +83,7 @@ class RoadShow {
                 $subject = __('COME TO: ', 'roadshow') . $title;
                 $body = __("Please notify me when you come to {$title}.", 'roadshow');
 
-                $return .= "<a class='place' href='mailto:{$email}?subject={$subject}&body={$body}'>" . $post->post_title . '</a>';
+                $return .= "<li class='roadshow-place'><a href='mailto:{$email}?subject={$subject}&body={$body}'>" . $post->post_title . '</a></li>';
 
             endwhile;
 
@@ -93,7 +93,7 @@ class RoadShow {
 
         endif;
 
-        $return .= '</div>';
+        $return .= '</ul>';
 
         return $return;
 
